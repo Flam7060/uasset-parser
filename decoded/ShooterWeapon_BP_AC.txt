@@ -1,0 +1,197 @@
+=== ShooterWeapon_BP_AC.uasset (4043 байт) ===
+FileVersionUE4=404 Licensee=10 Legacy=-3 UE3=864 Engine=0.0.0-0+
+PackageFlags=0x80000000 Guid=98C868E9488700493F96B7B13DDF4B28 HeaderSize=0xb8d BulkDataStart=0xfc7 Source=0x1a
+Names 55@0xab  Imports 23@0x4f9  Exports 13@0x77d  Depends@0xaf1
+
+--- Name Map (55) ---
+  [0] /Game/Mods/AC/ShooterWeapon_BP_AC
+  [1] /Script/CoreUObject
+  [2] /Script/Engine
+  [3] /Script/ShooterGame
+  [4] Actor
+  [5] bLegacyGeneratedClassIsAuthoritative
+  [6] bLegacyNeedToPurgeSkelRefs
+  [7] Blueprint
+  [8] BlueprintGeneratedClass
+  [9] BlueprintGuid
+  [10] BlueprintSystemVersion
+  [11] BoolProperty
+  [12] CategoryName
+  [13] CheckTimer
+  [14] Class
+  [15] ComponentTemplate
+  [16] Default
+  [17] Default__KismetSystemLibrary
+  [18] Default__ShooterWeapon
+  [19] Default__ShooterWeapon_BP_AC_C
+  [20] DefaultSceneRoot
+  [21] DefaultSceneRootNode
+  [22] Engine
+  [23] EntryPoint
+  [24] ExecuteUbergraph_ShooterWeapon_BP_AC
+  [25] Function
+  [26] GeneratedClass
+  [27] Guid
+  [28] IntProperty
+  [29] KismetSystemLibrary
+  [30] LinearColor
+  [31] Mesh1P
+  [32] Mesh3P
+  [33] NameProperty
+  [34] None
+  [35] Object
+  [36] ObjectProperty
+  [37] Package
+  [38] ParentClass
+  [39] PrintString
+  [40] ReceiveBeginPlay
+  [41] RootComponent
+  [42] SceneComponent
+  [43] ScriptStruct
+  [44] SCS_Node
+  [45] ShooterWeapon
+  [46] ShooterWeapon_BP_AC
+  [47] ShooterWeapon_BP_AC_C
+  [48] SimpleConstructionScript
+  [49] SkeletalMeshComponent
+  [50] StructProperty
+  [51] UserConstructionScript
+  [52] VariableName
+  [53] WeaponMesh1P
+  [54] WeaponMesh3P
+
+--- Imports (23) ---
+  [-1] Function  (/Script/CoreUObject.Class)
+  [-2] IntProperty  (/Script/CoreUObject.Class)
+  [-3] Object  (/Script/CoreUObject.Class)
+  [-4] Actor  (/Script/CoreUObject.Class)
+  [-5] Blueprint  (/Script/CoreUObject.Class)
+  [-6] BlueprintGeneratedClass  (/Script/CoreUObject.Class)
+  [-7] KismetSystemLibrary  (/Script/CoreUObject.Class)
+  [-8] SceneComponent  (/Script/CoreUObject.Class)
+  [-9] SCS_Node  (/Script/CoreUObject.Class)
+  [-10] SimpleConstructionScript  (/Script/CoreUObject.Class)
+  [-11] SkeletalMeshComponent  (/Script/CoreUObject.Class)
+  [-12] ShooterWeapon  (/Script/CoreUObject.Class)
+  [-13] Actor.ReceiveBeginPlay  (/Script/CoreUObject.Function)
+  [-14] Actor.UserConstructionScript  (/Script/CoreUObject.Function)
+  [-15] KismetSystemLibrary.PrintString  (/Script/CoreUObject.Function)
+  [-16] Default__KismetSystemLibrary  (/Script/Engine.KismetSystemLibrary)
+  [-17] null  (/Script/CoreUObject.Package)
+  [-18] null  (/Script/CoreUObject.Package)
+  [-19] null  (/Script/CoreUObject.Package)
+  [-20] Object.LinearColor  (/Script/CoreUObject.ScriptStruct)
+  [-21] Default__ShooterWeapon  (/Script/ShooterGame.ShooterWeapon)
+  [-22] Default__ShooterWeapon.WeaponMesh1P  (/Script/Engine.SkeletalMeshComponent)
+  [-23] Default__ShooterWeapon.WeaponMesh3P  (/Script/Engine.SkeletalMeshComponent)
+
+--- Exports (13) ---
+  [1] EntryPoint  class=IntProperty outer=ExecuteUbergraph_ShooterWeapon_BP_AC  flags=Public  36@0xb8d
+  [2] ExecuteUbergraph_ShooterWeapon_BP_AC  class=Function outer=ShooterWeapon_BP_AC_C  flags=Public  147@0xbb1
+  [3] ReceiveBeginPlay  class=Function super=Actor.ReceiveBeginPlay outer=ShooterWeapon_BP_AC_C  flags=Public  65@0xc44
+  [4] UserConstructionScript  class=Function super=Actor.UserConstructionScript outer=ShooterWeapon_BP_AC_C  flags=Public  45@0xc85
+  [5] CheckTimer  class=Function outer=ShooterWeapon_BP_AC_C  flags=Public  135@0xcb2
+  [6] ShooterWeapon_BP_AC_C  class=BlueprintGeneratedClass super=ShooterWeapon  flags=Public|Transactional  156@0xd39
+  [7] Default__ShooterWeapon_BP_AC_C  class=ShooterWeapon_BP_AC_C  flags=Public|ClassDefaultObject  92@0xdd5
+  [8] ShooterWeapon_BP_AC  class=Blueprint  flags=Public|Standalone|Transactional  226@0xe31
+  [9] SceneComponent_10  class=SceneComponent outer=ShooterWeapon_BP_AC_C  flags=Transactional|ArchetypeObject  12@0xf13
+  [10] SCS_Node_7  class=SCS_Node outer=SimpleConstructionScript_5  flags=Transactional  104@0xf1f
+  [11] SimpleConstructionScript_5  class=SimpleConstructionScript outer=ShooterWeapon_BP_AC_C  flags=Transactional  40@0xf87
+  [12] WeaponMesh1P  class=SkeletalMeshComponent outer=Default__ShooterWeapon_BP_AC_C  flags=Public|0x40000  12@0xfaf
+  [13] WeaponMesh3P  class=SkeletalMeshComponent outer=Default__ShooterWeapon_BP_AC_C  flags=Public|0x40000  12@0xfbb
+
+--- [1] ShooterWeapon_BP_AC_C.ExecuteUbergraph_ShooterWeapon_BP_AC.EntryPoint (IntProperty) ---
+  IntProperty  [Parm]
+
+--- [2] ShooterWeapon_BP_AC_C.ExecuteUbergraph_ShooterWeapon_BP_AC (Function) ---
+  flags: 0
+  signature: (EntryPoint: IntProperty)
+  bytecode: disk 111 / mem 131
+      0000  push_flow L_0080
+      0005  goto *EntryPoint
+    L_000f:
+      000f  Default__KismetSystemLibrary?.PrintString(self, "Weaponn start"/*#791715808*/, true, true, LinearColor{0.0, 0.66, 1.0, 1.0}, 2.0, -1)
+      007a  pop_flow
+    L_007b:  // вход из ReceiveBeginPlay
+      007b  goto L_000f
+    L_0080:
+      0080  return
+      0082  end_of_script
+    // mem 131 = заголовок 131, проверено
+
+--- [3] ShooterWeapon_BP_AC_C.ReceiveBeginPlay (Function) ---
+  flags: Event|Public|BlueprintCallable|BlueprintEvent overrides Actor.ReceiveBeginPlay
+  bytecode: disk 29 / mem 33
+      0000  push_flow L_001e
+      0005  goto L_000a
+    L_000a:
+      000a  ExecuteUbergraph_ShooterWeapon_BP_AC(123)  /* -> L_007b */
+      001d  pop_flow
+    L_001e:
+      001e  return
+      0020  end_of_script
+    // mem 33 = заголовок 33, проверено
+
+--- [4] ShooterWeapon_BP_AC_C.UserConstructionScript (Function) ---
+  flags: Event|Public|BlueprintCallable|BlueprintEvent overrides Actor.UserConstructionScript
+  bytecode: disk 9 / mem 9
+      0000  push_flow L_0006
+      0005  pop_flow
+    L_0006:
+      0006  return
+      0008  end_of_script
+    // mem 9 = заголовок 9, проверено
+
+--- [5] ShooterWeapon_BP_AC_C.CheckTimer (Function) ---
+  flags: Public|BlueprintCallable|BlueprintEvent
+  bytecode: disk 99 / mem 115
+      0000  push_flow L_0070
+      0005  goto L_000a
+    L_000a:
+      000a  Default__KismetSystemLibrary?.PrintString(self, "called"/*#4139916753*/, true, true, LinearColor{0.0, 0.66, 1.0, 1.0}, 2.0, -1)
+      006f  pop_flow
+    L_0070:
+      0070  return
+      0072  end_of_script
+    // mem 115 = заголовок 115, проверено
+
+--- [6] ShooterWeapon_BP_AC_C (BlueprintGeneratedClass) ---
+  properties:
+    SimpleConstructionScript: ObjectProperty = ShooterWeapon_BP_AC_C.SimpleConstructionScript_5
+  super: ShooterWeapon  flags: 0x840010  within: Object  config: Engine
+  generated by: ShooterWeapon_BP_AC  CDO: Default__ShooterWeapon_BP_AC_C  cooked: 1
+  functions: ExecuteUbergraph_ShooterWeapon_BP_AC, ReceiveBeginPlay, UserConstructionScript, CheckTimer
+
+--- [7] Default__ShooterWeapon_BP_AC_C (ShooterWeapon_BP_AC_C) ---
+  properties:
+    Mesh3P: ObjectProperty = Default__ShooterWeapon_BP_AC_C.WeaponMesh3P
+    Mesh1P: ObjectProperty = Default__ShooterWeapon_BP_AC_C.WeaponMesh1P
+    RootComponent: ObjectProperty = Default__ShooterWeapon_BP_AC_C.WeaponMesh3P
+
+--- [8] ShooterWeapon_BP_AC (Blueprint) ---
+  properties:
+    ParentClass: ObjectProperty = ShooterWeapon
+    SimpleConstructionScript: ObjectProperty = ShooterWeapon_BP_AC_C.SimpleConstructionScript_5
+    BlueprintSystemVersion: IntProperty = 2
+    GeneratedClass: ObjectProperty = ShooterWeapon_BP_AC_C
+    bLegacyNeedToPurgeSkelRefs: BoolProperty = false
+    bLegacyGeneratedClassIsAuthoritative: BoolProperty = true
+    BlueprintGuid: StructProperty<Guid> = {Guid="39E54B5D4B14A679D140D898D6C33B9B"}
+  ark u32: 1
+
+--- [9] ShooterWeapon_BP_AC_C.SceneComponent_10 (SceneComponent) ---
+
+--- [10] ShooterWeapon_BP_AC_C.SimpleConstructionScript_5.SCS_Node_7 (SCS_Node) ---
+  properties:
+    ComponentTemplate: ObjectProperty = ShooterWeapon_BP_AC_C.SceneComponent_10
+    VariableName: NameProperty = "DefaultSceneRoot"
+    CategoryName: NameProperty = "Default"
+
+--- [11] ShooterWeapon_BP_AC_C.SimpleConstructionScript_5 (SimpleConstructionScript) ---
+  properties:
+    DefaultSceneRootNode: ObjectProperty = ShooterWeapon_BP_AC_C.SimpleConstructionScript_5.SCS_Node_7
+
+--- [12] Default__ShooterWeapon_BP_AC_C.WeaponMesh1P (SkeletalMeshComponent) ---
+
+--- [13] Default__ShooterWeapon_BP_AC_C.WeaponMesh3P (SkeletalMeshComponent) ---
+

@@ -1,0 +1,67 @@
+=== DetectionPacket.uasset (1562 байт) ===
+FileVersionUE4=404 Licensee=10 Legacy=-3 UE3=864 Engine=0.0.0-0+
+PackageFlags=0x80000000 Guid=4C8F03FF48D4A555636B7B998FB37EFD HeaderSize=0x536 BulkDataStart=0x616 Source=0xe
+Names 18@0xab  Imports 8@0x28e  Exports 6@0x36e  Depends@0x506
+
+--- Name Map (18) ---
+  [0] /Game/Mods/AC/DetectionPacket
+  [1] /Script/CoreUObject
+  [2] /Script/Engine
+  [3] Class
+  [4] DetectionPacket
+  [5] FloatProperty
+  [6] MAC_10_24E632F049FB2F876B039BA27F85507E
+  [7] MaxCamOrbit_15_A4C8324E442769C809AC65B55FA2BC8B
+  [8] None
+  [9] Object
+  [10] Object_12_17545527461703AEE9111E8DA588D0CA
+  [11] ObjectProperty
+  [12] Package
+  [13] PlayerController
+  [14] PlayerID_19_B44EE80E4161DA04490A5A914D770FC4
+  [15] PlayerReference_18_FFBF7D2D413C98B1E2EDD2A8441DCB05
+  [16] StrProperty
+  [17] UserDefinedStruct
+
+--- Imports (8) ---
+  [-1] FloatProperty  (/Script/CoreUObject.Class)
+  [-2] Object  (/Script/CoreUObject.Class)
+  [-3] ObjectProperty  (/Script/CoreUObject.Class)
+  [-4] StrProperty  (/Script/CoreUObject.Class)
+  [-5] PlayerController  (/Script/CoreUObject.Class)
+  [-6] UserDefinedStruct  (/Script/CoreUObject.Class)
+  [-7] null  (/Script/CoreUObject.Package)
+  [-8] null  (/Script/CoreUObject.Package)
+
+--- Exports (6) ---
+  [1] Object_12_17545527461703AEE9111E8DA588D0CA  class=ObjectProperty outer=DetectionPacket  flags=Public  40@0x536
+  [2] MAC_10_24E632F049FB2F876B039BA27F85507E  class=StrProperty outer=DetectionPacket  flags=Public  36@0x55e
+  [3] PlayerID_19_B44EE80E4161DA04490A5A914D770FC4  class=StrProperty outer=DetectionPacket  flags=Public  36@0x582
+  [4] DetectionPacket  class=UserDefinedStruct  flags=Public|Standalone  36@0x5a6
+  [5] MaxCamOrbit_15_A4C8324E442769C809AC65B55FA2BC8B  class=FloatProperty outer=DetectionPacket  flags=Public  36@0x5ca
+  [6] PlayerReference_18_FFBF7D2D413C98B1E2EDD2A8441DCB05  class=ObjectProperty outer=DetectionPacket  flags=Public  40@0x5ee
+
+--- [1] DetectionPacket.Object_12_17545527461703AEE9111E8DA588D0CA (ObjectProperty) ---
+  ObjectProperty<Object>  [Edit|BlueprintVisible]
+
+--- [2] DetectionPacket.MAC_10_24E632F049FB2F876B039BA27F85507E (StrProperty) ---
+  StrProperty  [Edit|BlueprintVisible]
+
+--- [3] DetectionPacket.PlayerID_19_B44EE80E4161DA04490A5A914D770FC4 (StrProperty) ---
+  StrProperty  [Edit|BlueprintVisible]
+
+--- [4] DetectionPacket (UserDefinedStruct) ---
+  struct flags: 0x0
+  members:
+    PlayerID_19_B44EE80E4161DA04490A5A914D770FC4: StrProperty  [Edit|BlueprintVisible]
+    MAC_10_24E632F049FB2F876B039BA27F85507E: StrProperty  [Edit|BlueprintVisible]
+    Object_12_17545527461703AEE9111E8DA588D0CA: ObjectProperty<Object>  [Edit|BlueprintVisible]
+    MaxCamOrbit_15_A4C8324E442769C809AC65B55FA2BC8B: FloatProperty  [Edit|BlueprintVisible]
+    PlayerReference_18_FFBF7D2D413C98B1E2EDD2A8441DCB05: ObjectProperty<PlayerController>  [Edit|BlueprintVisible]
+
+--- [5] DetectionPacket.MaxCamOrbit_15_A4C8324E442769C809AC65B55FA2BC8B (FloatProperty) ---
+  FloatProperty  [Edit|BlueprintVisible]
+
+--- [6] DetectionPacket.PlayerReference_18_FFBF7D2D413C98B1E2EDD2A8441DCB05 (ObjectProperty) ---
+  ObjectProperty<PlayerController>  [Edit|BlueprintVisible]
+

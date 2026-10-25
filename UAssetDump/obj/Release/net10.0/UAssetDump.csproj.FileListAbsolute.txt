@@ -1,0 +1,5 @@
+/home/flam7060/code/ark/uasset-parser/UAssetDump/obj/Release/net10.0/UAssetDump.csproj.AssemblyReference.cache
+/home/flam7060/code/ark/uasset-parser/UAssetDump/obj/Release/net10.0/UAssetDump.GeneratedMSBuildEditorConfig.editorconfig
+/home/flam7060/code/ark/uasset-parser/UAssetDump/obj/Release/net10.0/UAssetDump.AssemblyInfoInputs.cache
+/home/flam7060/code/ark/uasset-parser/UAssetDump/obj/Release/net10.0/UAssetDump.AssemblyInfo.cs
+/home/flam7060/code/ark/uasset-parser/UAssetDump/obj/Release/net10.0/UAssetDump.csproj.CoreCompileInputs.cache
