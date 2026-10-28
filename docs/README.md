@@ -18,7 +18,7 @@ python3 scan_mods.py list --status stale       # мод обновился — �
 - `fresh` — отчёт покрывает текущие хеши ассетов, перепроверять не нужно.
 - `stale` — мод обновился после отчёта (sha256 файлов изменились). Перечитай отчёт, подкрути под новую версию, затем `scan_mods.py mark-reviewed <id>`.
 - `unreviewed` — отчёт есть, но baseline хешей ещё не зафиксирован (`mark-reviewed`).
-- `missing` — отчёта в `docs/*.md` нет.
+- `missing` — отчёта в `docs/mods/*.md` нет.
 
 Сам парсер (`parse_uasset.py`) кеширует полный текстовый дамп по sha256 файла в
 `.cache/by_hash/<sha256>.txt` — повторный запуск на том же `.uasset` мгновенный.
@@ -26,9 +26,9 @@ python3 scan_mods.py list --status stale       # мод обновился — �
 
 | Мод | Workshop ID | Файл отчёта | Дата | Что внутри |
 | --- | --- | --- | --- | --- |
-| Dino Storage v2 | 1609138312 | [DinoStorage2_1609138312.md](DinoStorage2_1609138312.md) | 2026-10-25 | Баги и эксплойты: 9 находок (2 высоких / 4 средних / 3 низких) в серверных RPC — SteamID-бэкдор, обход permission-гейтов, нет клампов/проверок. |
-| Семейство ArkFun (4 мода) | 2388016936, 3287578775, 3162195052, 3751710508 | [ArkFun_Family_20261025.md](ArkFun_Family_20261025.md) | 2026-10-25 | RPC-находки AF24/Ark Fun 24, Tribe Scan и отдельная баланс-заметка о сильной серверно-настраиваемой Tek-турели ArkFun. |
-| `/Game/Mods/AC` | — | [AC_mod.md](AC_mod.md) | 2026-10-17 | Прогон парсера по 7 ассетам (Actor/Buff/PrimalDino/Weapon и т.д.), все разобраны полностью. |
+| Dino Storage v2 | 1609138312 | [DinoStorage2_1609138312.md](mods/DinoStorage2_1609138312.md) | 2026-10-25 | Баги и эксплойты: 9 находок (2 высоких / 4 средних / 3 низких) в серверных RPC — SteamID-бэкдор, обход permission-гейтов, нет клампов/проверок. |
+| Семейство ArkFun (4 мода) | 2388016936, 3287578775, 3162195052, 3751710508 | [ArkFun_Family_20261025.md](mods/ArkFun_Family_20261025.md) | 2026-10-25 | RPC-находки AF24/Ark Fun 24, Tribe Scan и отдельная баланс-заметка о сильной серверно-настраиваемой Tek-турели ArkFun. |
+| `/Game/Mods/AC` | — | [AC_mod.md](mods/AC_mod.md) | 2026-10-17 | Прогон парсера по 7 ассетам (Actor/Buff/PrimalDino/Weapon и т.д.), все разобраны полностью. |
 | Structures Plus (S+) | 731604991 | [mods/Structures_Plus_S_731604991.md](mods/Structures_Plus_S_731604991.md) | 2026-10-26 | Propagator: сервер применяет клиентские `UI_Data` без проверки доступа и клампа — `PulseMax`/`PreventChanges` только в UI; `PulseCount` задаёт очки за мутацию (предел байт 255). Счётчик мутаций и цена не обходятся. Задействованные файлы мода и нативного `UPrimalDinoCharacter`. |
 
 ## Очередь (шаблоны, не разобрано)
