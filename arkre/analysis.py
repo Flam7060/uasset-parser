@@ -245,6 +245,16 @@ class FunctionAnalyzer:
                 out.append(None)
         return out if any(a is not None for a in out) else []
 
+    def copies(self, script) -> list:
+        """Присваивания «переменная = переменная»: по ним идёт значение дальше."""
+        out = []
+        for s in script.statements:
+            for x in walk(s):
+                if x.name in LET_OPS and x.args[0].name in VAR_OPS and x.args[1].name in VAR_OPS:
+                    out.append({"dst": self.names.member(x.args[0].args[0].index),
+                                "src": self.names.member(x.args[1].args[0].index), "mem": x.mem})
+        return out
+
     def _add(self, rows, kind, ptr_or_name, stmt, via, args=None):
         if isinstance(ptr_or_name, str):
             symbol = member = ptr_or_name
@@ -464,7 +474,8 @@ def build_view(data: bytes, name: str = "") -> dict:
                         for m in reachable(sc, info["entry"]):
                             via.setdefault(m, []).append(ev)
             fn["xrefs"] = fa.xrefs(sc, via)
-            fn["names"] = _name_consts(sc, events, fname)
+            fn["copies"] = fa.copies(sc)
+            fn["names"] = _name_consts(sc, events, fname, names)
         functions[fname] = fn
     view["functions"] = functions
 
@@ -472,16 +483,26 @@ def build_view(data: bytes, name: str = "") -> dict:
     return view
 
 
-def _name_consts(script, events: dict, fname: str) -> dict:
-    """NameConst по инструкциям: для убер-графа — по событиям (поток от метки)."""
+def _name_consts(script, events: dict, fname: str, names: Names) -> dict:
+    """Имена, с которыми сравнивают Name-аргумент (EqualEqual/NotEqual_NameName
+    и Switch по имени): для убер-графа — по событиям (поток от метки).
+    Так из `BPServerHandleNetExecCommand` достаются только имена команд."""
+    def callee(x):
+        t = x.args[0]
+        return t if isinstance(t, str) else names.member(t.index)
+
     def collect(mems):
         out = []
         for s in script.statements:
             if mems is not None and s.mem not in mems:
                 continue
             for x in walk(s):
-                if x.name == "NameConst" and x.args[0] not in out:
-                    out.append(x.args[0])
+                if x.name in ("VirtualFunction", "LocalVirtualFunction",
+                              "FinalFunction", "LocalFinalFunction") \
+                        and "_NameName" in callee(x):
+                    for arg in x.args[1]:
+                        if arg.name == "NameConst" and arg.args[0] not in out:
+                            out.append(arg.args[0])
         return out
 
     if fname.startswith("ExecuteUbergraph"):
