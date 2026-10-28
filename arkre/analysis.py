@@ -39,6 +39,8 @@ CALL_OPS = {"VirtualFunction", "LocalVirtualFunction", "FinalFunction", "LocalFi
             "CallMulticastDelegate"}
 VAR_OPS = {"InstanceVariable", "LocalVariable", "DefaultVariable", "LocalOutVariable"}
 LET_OPS = {"Let", "LetObj", "LetBool", "LetWeakObjPtr", "LetDelegate", "LetMulticastDelegate"}
+CONST_OPS = {"IntConst", "IntConstByte", "ByteConst", "Int64Const", "UInt64Const", "FloatConst",
+             "True", "False", "IntZero", "IntOne"}
 CAST_OPS = {"DynamicCast", "MetaCast", "ObjToInterfaceCast", "CrossInterfaceCast", "InterfaceToObjCast"}
 
 F_NET, F_NET_RELIABLE, F_NET_MULTICAST = 0x40, 0x80, 0x4000
@@ -225,7 +227,25 @@ class FunctionAnalyzer:
             self._expr(s, False, s, rows, events_of.get(s.mem))
         return rows
 
-    def _add(self, rows, kind, ptr_or_name, stmt, via, target_kind=""):
+    def compact_args(self, items) -> list:
+        """Аргументы вызова в компактном виде: {s|n|v|c: значение} или None."""
+        out = []
+        for x in items:
+            if x.name == "ARK_LocString":
+                x = x.args[0]
+            if x.name in ("StringConst", "UnicodeStringConst"):
+                out.append({"s": x.args[0]})
+            elif x.name == "NameConst":
+                out.append({"n": x.args[0]})
+            elif x.name in VAR_OPS:
+                out.append({"v": self.names.member(x.args[0].index)})
+            elif x.name in CONST_OPS:
+                out.append({"c": self.fmt.fmt(x)})
+            else:
+                out.append(None)
+        return out if any(a is not None for a in out) else []
+
+    def _add(self, rows, kind, ptr_or_name, stmt, via, args=None):
         if isinstance(ptr_or_name, str):
             symbol = member = ptr_or_name
         else:
@@ -234,6 +254,8 @@ class FunctionAnalyzer:
         row = {"kind": kind, "symbol": symbol, "member": member, "mem": stmt.mem}
         if via:
             row["via"] = via
+        if args:
+            row["args"] = args
         rows.append(row)
 
     def _expr(self, e, writing, stmt, rows, via):
@@ -255,12 +277,12 @@ class FunctionAnalyzer:
             self._expr(a[1], writing, stmt, rows, via)
             return
         if n in ("FinalFunction", "LocalFinalFunction", "CallMulticastDelegate"):
-            self._add(rows, "call", a[0], stmt, via)
+            self._add(rows, "call", a[0], stmt, via, self.compact_args(a[1]))
             for x in a[1]:
                 self._expr(x, False, stmt, rows, via)
             return
         if n in ("VirtualFunction", "LocalVirtualFunction"):
-            self._add(rows, "call", a[0], stmt, via)
+            self._add(rows, "call", a[0], stmt, via, self.compact_args(a[1]))
             for x in a[1]:
                 self._expr(x, False, stmt, rows, via)
             return
@@ -359,6 +381,10 @@ def build_view(data: bytes, name: str = "") -> dict:
     view: dict = {"name": name, "size": len(data), "problems": []}
 
     for b in render.problems(bodies):
+        # у текстур, мешей и прочих нативных объектов хвост — их собственные
+        # данные, которые парсер не разбирает по замыслу, а не сбой разбора
+        if b.kind == "object" and not b.error:
+            continue
         e = pkg.exports[b.index]
         why = b.error or (b.script.error if b.script and not b.script.mem_ok
                           else f"не прочитано {len(b.trailing)} байт")
