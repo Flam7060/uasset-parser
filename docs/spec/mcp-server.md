@@ -421,8 +421,19 @@ RVA — только из клиентского PDB после проверки
 ## 14. Открытые вопросы
 
 - `llvm-pdbutil` не в PATH, лежит в `/nix/store/…-llvm-21.1.8`. Добавить `llvm` в
-  home-manager или прописать `ARK_PDBUTIL` на `nix shell nixpkgs#llvm`?
-- Точный список серверных точек входа ARK, кроме `BPServerHandleNetExecCommand`
-  (multi-use, ServerRequest*…), — собрать по PDB на шаге 4.
+  home-manager или прописать `ARK_PDBUTIL` на `nix shell nixpkgs#llvm`? **Открыт.** Пока —
+  `ARK_PDBUTIL` в окружении MCP (`/nix/store/wfjvqf9zlh05w0admf7x1mz0jn4bfy21-llvm-21.1.8/bin/llvm-pdbutil`;
+  путь меняется при обновлении nix).
+- Замер импорта (шаг 4): серверный PDB, 1.44 млн записей типов и 203 тыс. public-символов,
+  разовый импорт ≈ 26 с, база в `.cache/pdb`; запасной путь через `pretty` не нужен.
+- Ванильные `.uasset` из `Content/` (не моды) не читаются парсером: `AdditionalPackagesToCook
+  нереально` — у них другая раскладка заголовка пакета. `resolve_parents` в `asset_defaults`
+  на ванильном родителе останавливается с пометкой. Нужна доработка парсера.
+- ~~Точный список серверных точек входа ARK~~ — снят по `ShooterGameServer.pdb` (шаг 4):
+  BP-реализуемые обработчики запросов клиента — `BPServerHandleNetExecCommand`,
+  `BPServerHandleItemNetExecCommand`, `BPServerHandleDataSetRPC`,
+  `BPServerVerifyStructurePlacementData`; список — `SERVER_ENTRYPOINTS` в `arkre/analysis.py`.
+  Нативные `ServerProcess*NetExecCommand*` в BP не переопределяются. Остальные
+  `Server*` RPC — нативные `UFUNCTION(Server)`, до BP-кода они не доходят.
 - Геттеры ini-опций, которыми пользуются моды, — зафиксировать на шаге 2.
 - Совпадают ли раскладки классов клиента и сервера — проверить на шаге 5 по рефлексии.
