@@ -160,5 +160,56 @@ def pdb_symbols(query: str, kind: str = "function", pdb_name: str = "server",
     return respond.fit(pdb.pdb_symbols(query, kind, pdb_name, limit))
 
 
+# --- фаза 2: живое чтение памяти (только при ARK_LIVE=1) ------------------------
+
+if config.live_enabled():
+    from arkre.live import LiveError, tools as live
+
+    _USER_ERRORS += (LiveError,)
+
+    @tool
+    def live_status() -> str:
+        """Живая игра: PID, база модуля, проверка сборки по ShooterGame.pdb (GUID/age),
+        найдены ли GNames / GUObjectArray / GWorld, число объектов. Звать первым: без
+        совпадения сборки остальное чтение отключено. Только чтение /proc/<pid>/mem."""
+        return respond.fit(live.live_status())
+
+    @tool
+    def live_instances(cls: str, include_subclasses: bool = True, limit: int = 50) -> str:
+        """Живые объекты класса (`BP_Propagator_C`, `PrimalItem` …): адрес, имя, outer,
+        флаги; CDO и архетипы исключены. Первый вызов строит индекс объектов (~10–30 с)."""
+        return respond.fit(live.live_instances(cls, include_subclasses, limit))
+
+    @tool
+    def live_object(ref: str, props: list[str] | None = None, depth: int = 1) -> str:
+        """Свойства живого объекта по рефлексии (массивы и структуры раскрыты до `depth`).
+        `ref` — адрес (0x…) или имя/полное имя; `props` — только эти поля."""
+        return respond.fit(live.live_object(ref, props, depth))
+
+    @tool
+    def live_cdo(cls: str) -> str:
+        """CDO класса из памяти и расхождение со статическими дефолтами ассета
+        (asset_defaults с родителями): видно, что поменяли ini/сервер."""
+        return respond.fit(live.live_cdo(cls))
+
+    @tool
+    def live_snapshot(ref: str, label: str) -> str:
+        """Снять состояние объекта в .cache/live/<label>.json — для live_diff."""
+        return respond.fit(live.live_snapshot(ref, label))
+
+    @tool
+    def live_diff(label_a: str, label_b: str) -> str:
+        """Какие поля изменились между двумя снимками live_snapshot."""
+        return respond.fit(live.live_diff(label_a, label_b))
+
+    @tool
+    def live_read(addr: str, size: int = 64, type: str | None = None,
+                  path: str | None = None) -> str:
+        """Сырые байты (hex) по адресу либо декод по типу из клиентского PDB (`type`,
+        например FVector). `path` — цепочка `+0x10->+0x38`: смещение, затем разыменование.
+        Неудачное чтение — readable=false, а не ошибка."""
+        return respond.fit(live.live_read(addr, size, type, path))
+
+
 if __name__ == "__main__":
     mcp.run()
