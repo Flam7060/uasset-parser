@@ -21,7 +21,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from mcp.server.fastmcp import FastMCP  # noqa: E402
 
-from arkre import asset_tools, assets, config, mods, pdb, respond, security, xref  # noqa: E402
+from arkre import asset_tools, assets, audit, config, mods, pdb, respond, security, xref  # noqa: E402
 
 mcp = FastMCP("ark-re")
 
@@ -138,6 +138,20 @@ def mod_ini_keys(workshop_id: str) -> str:
     с контекстом (server_rpc / widget / client / unknown) и потребители значения.
     `server_consumed=false` — лимит не доходит до серверного пути (проверяется только в UI)."""
     return respond.fit(security.ini_keys(workshop_id))
+
+
+@tool
+def mod_audit(workshop_id: str, detectors: list[str] | None = None) -> str:
+    """Автоматический аудит серверных RPC мода: прогоняет кодированные антипаттерны и
+    выдаёт ранжированный список мест для ручной проверки (не доказательство эксплойта).
+    Детекторы: D1 — мутация объекта из ExecParams.ObjParam* без проверки владельца/команды;
+    D2 — списание+выдача в одной функции, результат RemoveItem не проверен (дюп); D3 —
+    ограничитель читается не на серверном пути (только UI); D4 — число клиента в
+    количестве/смещении без клампа; D6 — решение построено на поле идентичности, которое
+    двигает ванильная механика (ноглин/смена трайба/криопод) — баги стыка блюпринтов.
+    `detectors` — подмножество, напр. ["D1","D2"] только про дюпы. Поле `server_reachable`
+    и серьёзность задают ранг. Первый прогон по крупному моду — десятки секунд."""
+    return respond.fit(audit.audit(workshop_id, detectors))
 
 
 # --- PDB ---------------------------------------------------------------------
