@@ -4,25 +4,50 @@
 
 ## Для ИИ: быстрая навигация
 
-Все установленные моды + статус отчёта лежат в `.cache/index.json` (gitignored).
-Прежде чем разбирать мод вручную:
+Есть MCP-сервер `ark-re` (`server.py`, спека — [spec/mcp-server.md](spec/mcp-server.md)): статусы
+модов, чтение ассетов по одной функции, поиск по моду, сетевые RPC, ключи ini, нативные символы из PDB.
+Регистрация (один раз, user scope):
 
 ```bash
-python3 scan_mods.py scan            # обновить индекс (хеши ассетов + статус)
-python3 scan_mods.py list --status missing     # что ещё не разобрано
-python3 scan_mods.py list --status stale       # мод обновился — отчёт устарел
+claude mcp add --scope user ark-re \
+  -e ARK_PDBUTIL=/nix/store/…-llvm-21.1.8/bin/llvm-pdbutil \
+  -- uv run --script /home/flam7060/code/ark/uasset-parser/server.py
 ```
 
-Статусы в индексе:
+Живое чтение памяти игры (`live_*`) включается только при `ARK_LIVE=1` в `-e`.
 
-- `fresh` — отчёт покрывает текущие хеши ассетов, перепроверять не нужно.
-- `stale` — мод обновился после отчёта (sha256 файлов изменились). Перечитай отчёт, подкрути под новую версию, затем `scan_mods.py mark-reviewed <id>`.
-- `unreviewed` — отчёт есть, но baseline хешей ещё не зафиксирован (`mark-reviewed`).
-- `missing` — отчёта в `docs/mods/*.md` нет.
+Без MCP то же делают CLI:
 
-Сам парсер (`parse_uasset.py`) кеширует полный текстовый дамп по sha256 файла в
-`.cache/by_hash/<sha256>.txt` — повторный запуск на том же `.uasset` мгновенный.
-`--no-cache` принудительно перепарсивает, `--cache-only` читает только из кеша.
+```bash
+python3 scan_mods.py scan                          # хеши ассетов, статусы
+python3 scan_mods.py list --status missing         # что ещё не разобрано
+python3 scan_mods.py list --status stale           # мод обновился — отчёт устарел
+python3 scan_mods.py mark-reviewed <id> --report <файл.md>   # зафиксировать baseline
+python3 scan_mods.py cache-gc                      # убрать кеш старых версий парсера
+python3 parse_uasset.py <файл.uasset>              # полный текстовый дамп
+```
+
+Baseline разбора лежит во frontmatter отчёта (`workshop_ids`, `reviewed`, `mod_hash`,
+`covered_assets`), кеш (`.cache/`, gitignored) его не хранит. Статус отчёта — `status`:
+
+| `status` | Что это | Считается разбором |
+| --- | --- | --- |
+| `template` | Пустой шаблон из `.mod` | нет |
+| `card` | Заполнены назначение/функции, security-разбора нет | нет |
+| `draft` | Разбор начат | да |
+| `done` | Разбор завершён | да |
+
+Статусы мода:
+
+- `fresh` — покрытые ассеты на месте и с теми же хешами, перепроверять не нужно.
+- `stale` — покрытый ассет изменился или исчез. Перечитай отчёт, подкрути под новую версию, затем `mark-reviewed`.
+- `unreviewed` — документ есть, но baseline хешей ещё не зафиксирован.
+- `missing` — нет документа `draft`/`done` с этим workshop_id.
+- `drifted` (признак) — мод обновился, но покрытых отчётом ассетов это не коснулось.
+
+Парсер кеширует разборы по sha256 файла и версии парсера (`.cache/v<ver>/by_hash/`):
+повторный запуск на том же `.uasset` мгновенный, а правка декодера делает старый кеш
+невидимым. `--no-cache` принудительно перепарсивает, `--cache-only` читает только из кеша.
 
 | Мод | Workshop ID | Файл отчёта | Дата | Что внутри |
 | --- | --- | --- | --- | --- |
