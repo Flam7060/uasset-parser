@@ -17,8 +17,9 @@ ARK и места, где клиентский код мода их вызыва
 ловит лимиты, которые проверяются только в UI (PulseMax в S+).
 
 Графы вызовов строятся по xrefs AssetView; виртуальные вызовы в байткоде
-несут голое имя без класса, поэтому разрешаются по имени в пределах мода —
-это сознательное завышение достижимости.
+несут голое имя без класса: такой вызов разрешается в функцию того же ассета,
+а в чужой — только если имя в моде единственное. Классы-виджеты из серверной
+достижимости исключены.
 """
 from __future__ import annotations
 
@@ -162,13 +163,21 @@ class CallGraph:
             if target_rel:
                 yield (target_rel, member)
         elif "." not in sym and ":" not in sym:
-            for r in by_name.get(member, ()):
-                yield (r, member)
+            # голое имя: своя функция ассета; чужая — только если имя в моде единственное
+            # (иначе `Initialize` и подобные склеили бы весь мод в одну компоненту)
+            if member in self.ma.items[rel]["view"]["functions"]:
+                yield (rel, member)
+            elif len(by_name.get(member, ())) == 1:
+                yield (by_name[member][0], member)
 
-    def reach(self, roots: set) -> set:
+    def reach(self, roots: set, skip_widgets: bool = False) -> set:
+        """Достижимые узлы. `skip_widgets`: в классы-виджеты не заходим — виджет
+        исполняется только на клиенте, серверный путь в него попасть не может."""
         seen, todo = set(roots), list(roots)
         while todo:
             for nxt in self.edges.get(todo.pop(), ()):
+                if skip_widgets and self.ma.items[nxt[0]]["widget"]:
+                    continue
                 if nxt not in seen:
                     seen.add(nxt)
                     todo.append(nxt)
@@ -219,7 +228,7 @@ def _const(args: list, i: int):
 def ini_keys(workshop_id: str) -> dict:
     ma = ModAssets(workshop_id)
     graph = CallGraph(ma)
-    server = graph.reach(graph.server_roots)
+    server = graph.reach(graph.server_roots, skip_widgets=True)
     client = graph.reach(graph.client_roots)
     wrappers = _find_wrappers(ma)
 
