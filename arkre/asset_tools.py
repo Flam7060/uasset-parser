@@ -14,7 +14,7 @@ from uasset import render
 from uasset.objects import parse_all
 from uasset.package import Package
 
-from . import analysis, assets
+from . import analysis, assets, pdb
 
 IMPORT_MODES = ("classes", "full", "none")
 
@@ -85,6 +85,15 @@ def _label_addr(text: str) -> Optional[int]:
     return None
 
 
+def _with_native(calls: list) -> list:
+    """BP → натив: для вызовов /Script/… добавляет символ из PDB, если он уже импортирован."""
+    for c in calls:
+        native = pdb.native_for(c["target"])
+        if native:
+            c["native"] = native
+    return calls
+
+
 def asset_function(asset: str, function: str, entry: Optional[str] = None,
                    from_line: int = 0, max_lines: int = 400, tree: bool = False) -> dict:
     r, v = _view(asset)
@@ -134,15 +143,16 @@ def asset_function(asset: str, function: str, entry: Optional[str] = None,
     calls: dict = {}
     for x in xrefs:
         if x["kind"] == "call":
+            virtual = "." not in x["symbol"] and ":" not in x["symbol"]
             c = calls.setdefault(x["symbol"], {"target": x["symbol"], "count": 0,
-                                               "virtual": "." not in x["symbol"] and ":" not in x["symbol"]})
+                                               "kind": "virtual" if virtual else "final"})
             c["count"] += 1
     meta = {
         "asset": r.game_path, "function": function,
         **({"entry": entry} if entry else {}),
         "flags": fn["flags"], "overrides": fn["overrides"],
         "signature": _signature(fn), "params": fn["params"], "locals": fn["locals"],
-        "calls": sorted(calls.values(), key=lambda c: c["target"]),
+        "calls": _with_native(sorted(calls.values(), key=lambda c: c["target"])),
         "reads": sorted({x["symbol"] for x in xrefs if x["kind"] == "read"}),
         "writes": sorted({x["symbol"] for x in xrefs if x["kind"] == "write"}),
         "problems": fn["problems"],

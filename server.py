@@ -21,11 +21,11 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from mcp.server.fastmcp import FastMCP  # noqa: E402
 
-from arkre import asset_tools, assets, config, mods, respond, security, xref  # noqa: E402
+from arkre import asset_tools, assets, config, mods, pdb, respond, security, xref  # noqa: E402
 
 mcp = FastMCP("ark-re")
 
-_USER_ERRORS = (assets.AssetError, asset_tools.ToolError, mods.ModError, ValueError)
+_USER_ERRORS = (assets.AssetError, asset_tools.ToolError, mods.ModError, pdb.PdbError, ValueError)
 
 
 def tool(fn):
@@ -138,6 +138,26 @@ def mod_ini_keys(workshop_id: str) -> str:
     с контекстом (server_rpc / widget / client / unknown) и потребители значения.
     `server_consumed=false` — лимит не доходит до серверного пути (проверяется только в UI)."""
     return respond.fit(security.ini_keys(workshop_id))
+
+
+# --- PDB ---------------------------------------------------------------------
+
+@tool
+def pdb_type(name: str, pdb_name: str = "server") -> str:
+    """Раскладка нативного класса/структуры из PDB: размер, базовые классы, поля
+    {offset, size, type, name}, битовые поля. Нужно точное имя (APrimalDinoCharacter,
+    FBPNetExecParams); если не найдено — вернутся ближайшие. `pdb_name`: server | client.
+    Первый вызов делает разовый импорт PDB в SQLite (~30 с)."""
+    return respond.fit(pdb.pdb_type(name, pdb_name))
+
+
+@tool
+def pdb_symbols(query: str, kind: str = "function", pdb_name: str = "server",
+                limit: int = 50) -> str:
+    """Поиск символов в PDB по имени (glob, декорированное или нет): имя, RVA, размер
+    (оценка по соседнему символу). `kind`: function | data | any. Чтобы найти нативную
+    реализацию вызова из BP, смотри calls[].native в asset_function."""
+    return respond.fit(pdb.pdb_symbols(query, kind, pdb_name, limit))
 
 
 if __name__ == "__main__":

@@ -105,8 +105,25 @@ def pdb_path(which: str) -> str:
     return p
 
 
+_sha_memo: dict = {}
+
+
 def db_path(pdb_file: str) -> str:
-    return os.path.join(cache.root(), "pdb", f"{cache.sha256_file(pdb_file)}.sqlite")
+    """Путь базы по sha256 файла; хеш 370 МБ считаем раз на (размер, mtime)."""
+    st = os.stat(pdb_file)
+    key = (pdb_file, st.st_size, st.st_mtime_ns)
+    if key not in _sha_memo:
+        _sha_memo[key] = cache.sha256_file(pdb_file)
+    return os.path.join(cache.root(), "pdb", f"{_sha_memo[key]}.sqlite")
+
+
+def imported(which: str = "server") -> Optional[str]:
+    """Путь к готовой базе или None — без запуска импорта."""
+    try:
+        p = db_path(pdb_path(which))
+    except (PdbError, OSError):
+        return None
+    return p if os.path.isfile(p) else None
 
 
 # --- импорт ----------------------------------------------------------------------
@@ -499,10 +516,10 @@ def native_for(symbol: str, pdb: str = "server") -> Optional[dict]:
     if key in _native_cache:
         return _native_cache[key]
     _, cls, func = m.groups()
-    try:
-        con = connect(pdb)
-    except PdbError:
+    dbp = imported(pdb)
+    if dbp is None:
         return None
+    con = sqlite3.connect(dbp)
     try:
         res = None
         for prefix in ("A", "U", "F"):
