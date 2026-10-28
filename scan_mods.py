@@ -27,7 +27,7 @@ import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from uasset import cache  # noqa: E402
+from arkre import cache  # noqa: E402
 
 DEFAULT_MODS_DIR = os.path.expanduser(
     "~/.local/share/Steam/steamapps/common/ARK/ShooterGame/Content/Mods"

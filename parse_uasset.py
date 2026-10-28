@@ -16,10 +16,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from uasset.reader import ParseError          # noqa: E402
-from uasset.package import Package            # noqa: E402
-from uasset.objects import parse_all          # noqa: E402
-from uasset import render                     # noqa: E402
-from uasset import cache                      # noqa: E402
+from arkre import analysis, cache             # noqa: E402
 
 SECTIONS = ("header", "names", "imports", "exports", "bodies")
 
@@ -36,7 +33,7 @@ def parse_args(argv):
     ap.add_argument("--tree", action="store_true",
                     help="под каждой инструкцией — дерево узлов Kismet с оффсетами диск/память")
     ap.add_argument("--no-cache", action="store_true",
-                    help="не читать и не писать .cache/by_hash (принудительный перепарс)")
+                    help="не читать и не писать кеш (принудительный перепарс)")
     ap.add_argument("--cache-only", action="store_true",
                     help="читать только из кеша; если нет — ошибка (не парсить)")
     args = ap.parse_args(argv)
@@ -96,37 +93,13 @@ def dump(path, args):
         return 2
 
     try:
-        pkg = Package(data, os.path.basename(path))
+        text, bad = analysis.full_dump(data, path, args.sections, args.filter, args.export, args.tree)
     except ParseError as ex:
         print(f"{path}: пакет не разобран: {ex}", file=sys.stderr)
         return 2
-
-    bodies = parse_all(pkg)
-    ctx = render.Context(pkg, bodies)
-    out = []
-    if "header" in args.sections:
-        render.render_header(pkg, out)
-    if "names" in args.sections:
-        render.render_names(pkg, out, args.filter)
-    if "imports" in args.sections:
-        render.render_imports(pkg, out)
-    if "exports" in args.sections:
-        render.render_export_table(pkg, out)
-    if "bodies" in args.sections:
-        wanted = [w.lower() for w in args.export]
-        for b in bodies:
-            name = pkg.exports[b.index].object_name.lower()
-            if not wanted or any(w in name for w in wanted):
-                render.render_body(ctx, b, out, args.tree)
-    text = "\n".join(out) + "\n"
     sys.stdout.write(text)
-
-    bad = render.problems(bodies)
-    for b in bad:
-        e = pkg.exports[b.index]
-        why = b.error or (b.script.error if b.script and not b.script.mem_ok else
-                          f"не прочитано {len(b.trailing)} байт")
-        print(f"{path}: экспорт [{b.index + 1}] {e.object_name}: {why}", file=sys.stderr)
+    for why in bad:
+        print(f"{path}: {why}", file=sys.stderr)
 
     if use_cache and not bad:
         cache.write_dump(sha, text)
