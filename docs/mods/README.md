@@ -45,7 +45,7 @@
 | 3732096922 | MesaScorched | карта/расширение карты | [MesaScorched_3732096922.md](MesaScorched_3732096922.md) |
 | 3706627221 | Mod 3706627221 | unknown | [Mod_3706627221_3706627221.md](Mod_3706627221_3706627221.md) |
 | 2142974617 | Pickup Gun (with Anti-Dupe) | геймплей (PrimalGameData) | [Pickup_Gun_with_Anti_Dupe_2142974617.md](Pickup_Gun_with_Anti_Dupe_2142974617.md) |
-| 731604991 | Structures Plus (S+) | геймплей (PrimalGameData) | [Structures_Plus_S_731604991.md](Structures_Plus_S_731604991.md) |
+| 731604991 | Structures Plus (S+) | геймплей (PrimalGameData) | [Structures_Plus_S_731604991.md](Structures_Plus_S_731604991.md) — **разобран** (Propagator, бридинг/мутации) |
 | 3461528683 | StructuresPlusMod | unknown | [StructuresPlusMod_3461528683.md](StructuresPlusMod_3461528683.md) |
 | 2808736867 | The Island | Extension | карта/расширение карты | [The_Island_Extension_2808736867.md](The_Island_Extension_2808736867.md) |
 | 924619115 | WBUI | unknown | [WBUI_924619115.md](WBUI_924619115.md) |

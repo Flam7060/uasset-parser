@@ -29,6 +29,7 @@ python3 scan_mods.py list --status stale       # мод обновился — �
 | Dino Storage v2 | 1609138312 | [DinoStorage2_1609138312.md](DinoStorage2_1609138312.md) | 2026-10-25 | Баги и эксплойты: 9 находок (2 высоких / 4 средних / 3 низких) в серверных RPC — SteamID-бэкдор, обход permission-гейтов, нет клампов/проверок. |
 | Семейство ArkFun (4 мода) | 2388016936, 3287578775, 3162195052, 3751710508 | [ArkFun_Family_20261025.md](ArkFun_Family_20261025.md) | 2026-10-25 | RPC-находки AF24/Ark Fun 24, Tribe Scan и отдельная баланс-заметка о сильной серверно-настраиваемой Tek-турели ArkFun. |
 | `/Game/Mods/AC` | — | [AC_mod.md](AC_mod.md) | 2026-10-17 | Прогон парсера по 7 ассетам (Actor/Buff/PrimalDino/Weapon и т.д.), все разобраны полностью. |
+| Structures Plus (S+) | 731604991 | [mods/Structures_Plus_S_731604991.md](mods/Structures_Plus_S_731604991.md) | 2026-10-26 | Propagator: сервер применяет клиентские `UI_Data` без проверки доступа и клампа — `PulseMax`/`PreventChanges` только в UI; `PulseCount` задаёт очки за мутацию (предел байт 255). Счётчик мутаций и цена не обходятся. Задействованные файлы мода и нативного `UPrimalDinoCharacter`. |
 
 ## Очередь (шаблоны, не разобрано)
 
