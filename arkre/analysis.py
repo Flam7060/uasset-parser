@@ -28,9 +28,15 @@ from uasset.reader import ParseError
 
 from . import cache
 
-# Серверные точки входа ARK, вызываемые по запросу клиента. Пополняется и
-# сверяется по PDB (шаг 4).
-SERVER_ENTRYPOINTS = ("BPServerHandleNetExecCommand",)
+# Серверные точки входа ARK, вызываемые по запросу клиента. Подтверждены по
+# ShooterGameServer.pdb (Z_Construct_UFunction_*): BP-реализуемые обработчики
+# запросов клиента; BPServerHandleNetExecCommand подтверждён ещё и на S+.
+SERVER_ENTRYPOINTS = (
+    "BPServerHandleNetExecCommand",
+    "BPServerHandleItemNetExecCommand",
+    "BPServerHandleDataSetRPC",
+    "BPServerVerifyStructurePlacementData",
+)
 
 CLASS_IMPORTS = {"Class", "BlueprintGeneratedClass", "WidgetBlueprintGeneratedClass",
                  "AnimBlueprintGeneratedClass", "Package"}
