@@ -19,6 +19,7 @@ from uasset.reader import ParseError          # noqa: E402
 from uasset.package import Package            # noqa: E402
 from uasset.objects import parse_all          # noqa: E402
 from uasset import render                     # noqa: E402
+from uasset import cache                      # noqa: E402
 
 SECTIONS = ("header", "names", "imports", "exports", "bodies")
 
@@ -34,6 +35,10 @@ def parse_args(argv):
                     help=f"секции через запятую: {','.join(SECTIONS)}")
     ap.add_argument("--tree", action="store_true",
                     help="под каждой инструкцией — дерево узлов Kismet с оффсетами диск/память")
+    ap.add_argument("--no-cache", action="store_true",
+                    help="не читать и не писать .cache/by_hash (принудительный перепарс)")
+    ap.add_argument("--cache-only", action="store_true",
+                    help="читать только из кеша; если нет — ошибка (не парсить)")
     args = ap.parse_args(argv)
 
     # Совместимость со старым вызовом `parse_uasset.py <path> [filter]`:
@@ -59,6 +64,15 @@ def expand(paths):
     return files
 
 
+def _can_cache(args) -> bool:
+    """Кеш валиден только для полного дампа без фильтров — иначе он не репрезентативен."""
+    return (not args.no_cache
+            and not args.tree
+            and not args.filter
+            and not args.export
+            and args.sections == set(SECTIONS))
+
+
 def dump(path, args):
     """Возвращает код возврата для одного файла."""
     try:
@@ -67,6 +81,20 @@ def dump(path, args):
     except OSError as ex:
         print(f"{path}: не открыть: {ex}", file=sys.stderr)
         return 2
+
+    sha = cache.sha256_bytes(data)
+    use_cache = _can_cache(args)
+    if use_cache:
+        cached = cache.read_dump(sha)
+        if cached is not None:
+            sys.stdout.write(cached)
+            if not cached.endswith("\n"):
+                sys.stdout.write("\n")
+            return 0
+    if args.cache_only:
+        print(f"{path}: нет в кеше (sha256={sha[:12]}…) и --cache-only", file=sys.stderr)
+        return 2
+
     try:
         pkg = Package(data, os.path.basename(path))
     except ParseError as ex:
@@ -90,7 +118,8 @@ def dump(path, args):
             name = pkg.exports[b.index].object_name.lower()
             if not wanted or any(w in name for w in wanted):
                 render.render_body(ctx, b, out, args.tree)
-    sys.stdout.write("\n".join(out) + "\n")
+    text = "\n".join(out) + "\n"
+    sys.stdout.write(text)
 
     bad = render.problems(bodies)
     for b in bad:
@@ -98,6 +127,9 @@ def dump(path, args):
         why = b.error or (b.script.error if b.script and not b.script.mem_ok else
                           f"не прочитано {len(b.trailing)} байт")
         print(f"{path}: экспорт [{b.index + 1}] {e.object_name}: {why}", file=sys.stderr)
+
+    if use_cache and not bad:
+        cache.write_dump(sha, text)
     return 3 if bad else 0
 
 
