@@ -1,3 +1,9 @@
+---
+title: "ArkDex_Extinction_Extensions (2862122194)"
+status: template
+workshop_ids: [2862122194]
+---
+
 # ArkDex_Extinction_Extensions (2862122194)
 
 > **Шаблон — разбор не проводился.** Заполнить при анализе (ниже).

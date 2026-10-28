@@ -1,3 +1,9 @@
+---
+title: "MesaRagnarokExtension (3599698299)"
+status: template
+workshop_ids: [3599698299]
+---
+
 # MesaRagnarokExtension (3599698299)
 
 > **Шаблон — разбор не проводился.** Заполнить при анализе (ниже).

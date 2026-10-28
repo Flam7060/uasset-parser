@@ -1,3 +1,9 @@
+---
+title: "ArkDex_Genesis1_Extensions (2878991603)"
+status: template
+workshop_ids: [2878991603]
+---
+
 # ArkDex_Genesis1_Extensions (2878991603)
 
 > **Шаблон — разбор не проводился.** Заполнить при анализе (ниже).

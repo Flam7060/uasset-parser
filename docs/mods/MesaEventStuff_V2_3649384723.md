@@ -1,3 +1,9 @@
+---
+title: "MesaEventStuff V2 (3649384723)"
+status: template
+workshop_ids: [3649384723]
+---
+
 # MesaEventStuff V2 (3649384723)
 
 > **Шаблон — разбор не проводился.** Заполнить при анализе (ниже).

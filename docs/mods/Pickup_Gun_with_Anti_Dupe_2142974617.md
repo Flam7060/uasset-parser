@@ -1,3 +1,9 @@
+---
+title: "Pickup Gun (with Anti-Dupe) (2142974617)"
+status: template
+workshop_ids: [2142974617]
+---
+
 # Pickup Gun (with Anti-Dupe) (2142974617)
 
 > **Шаблон — разбор не проводился.** Заполнить при анализе (ниже).

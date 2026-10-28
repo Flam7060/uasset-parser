@@ -1,3 +1,9 @@
+---
+title: "Mesa The Island V10 (3561146931)"
+status: template
+workshop_ids: [3561146931]
+---
+
 # Mesa The Island V10 (3561146931)
 
 > **Шаблон — разбор не проводился.** Заполнить при анализе (ниже).

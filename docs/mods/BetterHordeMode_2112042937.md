@@ -1,3 +1,9 @@
+---
+title: "BetterHordeMode (2112042937)"
+status: template
+workshop_ids: [2112042937]
+---
+
 # BetterHordeMode (2112042937)
 
 > **Шаблон — разбор не проводился.** Заполнить при анализе (ниже).

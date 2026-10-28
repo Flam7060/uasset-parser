@@ -1,3 +1,9 @@
+---
+title: "StructuresPlusMod (3461528683)"
+status: template
+workshop_ids: [3461528683]
+---
+
 # StructuresPlusMod (3461528683)
 
 > **Шаблон — разбор не проводился.** Заполнить при анализе (ниже).

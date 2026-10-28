@@ -1,3 +1,9 @@
+---
+title: "MesaScorched (3732096922)"
+status: template
+workshop_ids: [3732096922]
+---
+
 # MesaScorched (3732096922)
 
 > **Шаблон — разбор не проводился.** Заполнить при анализе (ниже).

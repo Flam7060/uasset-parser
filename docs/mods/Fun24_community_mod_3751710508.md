@@ -1,3 +1,9 @@
+---
+title: "Fun24 community mod (3751710508)"
+status: card
+workshop_ids: [3751710508]
+---
+
 # Fun24 community mod (3751710508)
 
 > **Покрыт общим отчётом:** [семейство ArkFun](../ArkFun_Family_20261025.md). Пользовательские `NetServer` RPC в проверенных игровых блюпринтах не найдены.

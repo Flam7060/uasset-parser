@@ -1,3 +1,9 @@
+---
+title: "MainExtension_TheIsland (3495937620)"
+status: template
+workshop_ids: [3495937620]
+---
+
 # MainExtension_TheIsland (3495937620)
 
 > **Шаблон — разбор не проводился.** Заполнить при анализе (ниже).

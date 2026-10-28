@@ -1,3 +1,9 @@
+---
+title: "MesaExtinctionExtension (3559620925)"
+status: template
+workshop_ids: [3559620925]
+---
+
 # MesaExtinctionExtension (3559620925)
 
 > **Шаблон — разбор не проводился.** Заполнить при анализе (ниже).

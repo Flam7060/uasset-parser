@@ -1,3 +1,9 @@
+---
+title: "Awesome Teleporters! (889745138)"
+status: template
+workshop_ids: [889745138]
+---
+
 # Awesome Teleporters! (889745138)
 
 > **Шаблон — разбор не проводился.** Заполнить при анализе (ниже).

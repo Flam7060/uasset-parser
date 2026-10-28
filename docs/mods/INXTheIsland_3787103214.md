@@ -1,3 +1,9 @@
+---
+title: "INXTheIsland (3787103214)"
+status: template
+workshop_ids: [3787103214]
+---
+
 # INXTheIsland (3787103214)
 
 > **Шаблон — разбор не проводился.** Заполнить при анализе (ниже).

@@ -1,3 +1,9 @@
+---
+title: "The Island | Extension (2808736867)"
+status: template
+workshop_ids: [2808736867]
+---
+
 # The Island | Extension (2808736867)
 
 > **Шаблон — разбор не проводился.** Заполнить при анализе (ниже).

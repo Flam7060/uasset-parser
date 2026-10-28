@@ -1,3 +1,9 @@
+---
+title: "Awesome SpyGlass! (1404697612)"
+status: template
+workshop_ids: [1404697612]
+---
+
 # Awesome SpyGlass! (1404697612)
 
 > **Шаблон — разбор не проводился.** Заполнить при анализе (ниже).

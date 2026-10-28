@@ -1,3 +1,9 @@
+---
+title: "AutoYutyBuff (2597779471)"
+status: template
+workshop_ids: [2597779471]
+---
+
 # AutoYutyBuff (2597779471)
 
 > **Шаблон — разбор не проводился.** Заполнить при анализе (ниже).

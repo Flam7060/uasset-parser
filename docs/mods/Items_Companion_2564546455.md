@@ -1,3 +1,9 @@
+---
+title: "Items+ Companion (2564546455)"
+status: template
+workshop_ids: [2564546455]
+---
+
 # Items+ Companion (2564546455)
 
 > **Шаблон — разбор не проводился.** Заполнить при анализе (ниже).

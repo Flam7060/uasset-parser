@@ -1,3 +1,10 @@
+---
+title: "Structures Plus (S+) (731604991): отчёт по Propagator"
+status: done
+workshop_ids: [731604991]
+reviewed: 2026-10-26
+---
+
 # Structures Plus (S+) (731604991): отчёт по Propagator
 
 _2026-10-26 · Skaqq_

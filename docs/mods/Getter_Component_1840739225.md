@@ -1,3 +1,9 @@
+---
+title: "Getter Component (1840739225)"
+status: template
+workshop_ids: [1840739225]
+---
+
 # Getter Component (1840739225)
 
 > **Шаблон — разбор не проводился.** Заполнить при анализе (ниже).
