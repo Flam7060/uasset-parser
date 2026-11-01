@@ -54,7 +54,17 @@ Baseline разбора лежит во frontmatter отчёта (`workshop_ids`
 | Dino Storage v2 | 1609138312 | [DinoStorage2_1609138312.md](mods/DinoStorage2_1609138312.md) | 2026-10-25 | Баги и эксплойты: 9 находок (2 высоких / 4 средних / 3 низких) в серверных RPC — SteamID-бэкдор, обход permission-гейтов, нет клампов/проверок. |
 | Семейство ArkFun (4 мода) | 2388016936, 3287578775, 3162195052, 3751710508 | [ArkFun_Family_20261025.md](mods/ArkFun_Family_20261025.md) | 2026-10-25 | RPC-находки AF24/Ark Fun 24, Tribe Scan и отдельная баланс-заметка о сильной серверно-настраиваемой Tek-турели ArkFun. |
 | `/Game/Mods/AC` | — | [AC_mod.md](mods/AC_mod.md) | 2026-10-17 | Прогон парсера по 7 ассетам (Actor/Buff/PrimalDino/Weapon и т.д.), все разобраны полностью. |
-| Structures Plus (S+) | 731604991 | [mods/Structures_Plus_S_731604991.md](mods/Structures_Plus_S_731604991.md) | 2026-10-26 | Propagator: сервер применяет клиентские `UI_Data` без проверки доступа и клампа — `PulseMax`/`PreventChanges` только в UI; `PulseCount` задаёт очки за мутацию (предел байт 255). Счётчик мутаций и цена не обходятся. Задействованные файлы мода и нативного `UPrimalDinoCharacter`. |
+| Structures Plus (S+) | 731604991 | [mods/structures_plus_family/Structures_Plus_S_731604991.md](mods/structures_plus_family/Structures_Plus_S_731604991.md) | 2026-10-31 | Propagator: сервер применяет клиентские `UI_Data` без проверки доступа и клампа (`PulseMax`/`PreventChanges` только в UI). OmniTool: `HandleBasicTransfer`/`SanityCheckBasicTransfer` проверяет дистанцию только до цели, источник — только `IsValid`, а `SourceInv` ставится прямо из клиентского `ExecParams.ObjParam1`. `mod_audit` (219 срабатываний) даёт backlog по Converter/DedicatedStorage/Transmutator/ChibiDisplay/BlueprintMaker/ItemTranslocator/PullFunctions — не проверены построчно. |
+| Коллекция MESA (32 мода) | 3826240151 | [mods/MESA_Collection_3826240151.md](mods/MESA_Collection_3826240151.md) | 2026-10-28 | Обзор коллекции серверов MESA: 21 карточка (`status: card`, без полного security-разбора) — что делает мод и как устроен. Кандидаты: SpyGlass отдаёт чужие инвентари и меняет серверные настройки без админа; Pickup Gun удаляет предметы из присланного клиентом инвентаря; C+ — фикс pull-дюпа S+ клампом; Getter Component = HWID-баны (MD5 MAC). |
+| Items+ Companion | 2564546455 | [mods/Items_Companion_2564546455.md](mods/Items_Companion_2564546455.md) | 2026-10-29 | Клиентский мост серверного плагина Items+ (вес, `bPreventUpload`). RPC нет. Условно: после рестарта у предметов в хранилищах ванильный `bPreventUpload` (флаг не `SaveGame`, `ServerPostInit` правит только инвентари игроков). Конфиг на клиент приходит только при спавне пешки и принимается один раз. Конфиг сервера читается с клиента. |
+
+## Разбор самой игры (не моды)
+
+Нативная логика базовой игры из `ShooterGameServer.pdb` + ванильные ассеты (теперь парсятся). Помечены `kind: game-analysis`.
+
+| Тема | Отчёт | Дата | Кратко |
+| --- | --- | --- | --- |
+| Инвентарь, MultiUse, доверие к клиенту | [game/native_inventory_multiuse_trust.md](game/native_inventory_multiuse_trust.md) | 2026-11-01 | Кандидаты по серверным RPC, которым клиент диктует индекс действия (`ServerMultiUse`→ сумка-трансмиттер), указатель чужого инвентаря (9× `Server*RemoteInventory`), количество/слот (дюп чертежей) и тайминг/атомарность TransferAll (овер-кап дюп станции брони). Тела (asm) не читались — кандидаты на стендовую проверку. |
 
 ## Очередь (шаблоны, не разобрано)
 
