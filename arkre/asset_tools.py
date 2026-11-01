@@ -34,9 +34,7 @@ def _view(asset: str):
     v = analysis.view_for_file(r.file)
     if v.get("broken"):
         why = v["problems"][0]["why"] if v["problems"] else "?"
-        raise ToolError(f"{r.game_path}: пакет не читается парсером ({why}). Для ванильных "
-                        f"ассетов это известное ограничение: у них другая раскладка заголовка "
-                        f"пакета, чем у модов.")
+        raise ToolError(f"{r.game_path}: пакет не читается парсером ({why}).")
     return r, v
 
 

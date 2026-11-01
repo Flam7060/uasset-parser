@@ -65,6 +65,7 @@ class Summary:
     compatible_engine_version: str = ""
     compression_flags: int = 0
     package_source: int = 0
+    additional_packages_marker: int = 0
     additional_packages: list = field(default_factory=list)
     texture_allocations: int = 0
     ark_extra: list = field(default_factory=list)
@@ -179,10 +180,21 @@ def parse_summary(r):
         # делаем, чтобы не парсить мусор как данные экспортов.
         raise ParseError(f"пакет сжат ({chunks} чанков, флаги {s.compression_flags:#x}) — не поддерживается")
     s.package_source = r.u32()
-    add_count = r.i32()
-    if not 0 <= add_count <= 4096:
-        raise ParseError(f"AdditionalPackagesToCook {add_count} нереально")
-    s.additional_packages = [r.fstring() for _ in range(add_count)]
+    # AdditionalPackagesToCook — редакторный массив; в cooked-пакетах ARK строки
+    # инлайн не сериализованы (asset-registry начинается сразу за хвостом
+    # FPackageFileSummary — проверяется ниже). Dev-kit кук (моды) пишет сюда
+    # счётчик 0, Wildcard кук (ваниль) — сентинел 0x1234 (4660). Значение держим
+    # как маркер; строки читаем лишь если счётчик похож на настоящий небольшой
+    # массив, и откатываемся к пустому, если они не парсятся как FString.
+    s.additional_packages_marker = r.i32()
+    s.additional_packages = []
+    if 0 < s.additional_packages_marker <= 16:
+        mark = r.tell()
+        try:
+            s.additional_packages = [r.fstring() for _ in range(s.additional_packages_marker)]
+        except ParseError:
+            r.seek(mark)
+            s.additional_packages = []
 
     if s.legacy_version > -7:
         s.texture_allocations = r.i32()
