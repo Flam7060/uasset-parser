@@ -38,6 +38,12 @@ class VocabTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             audit.audit("1", detectors=["D9"])
 
+    def test_untrusted_param_filters_controller(self):
+        self.assertTrue(audit._is_untrusted_param({"name": "Target", "type": "ObjectProperty<Object>"}))
+        self.assertTrue(audit._is_untrusted_param({"name": "ItemClass", "type": "ClassProperty<PrimalItem>"}))
+        self.assertFalse(audit._is_untrusted_param({"name": "ForPC", "type": "ObjectProperty<PlayerController>"}))
+        self.assertFalse(audit._is_untrusted_param({"name": "Count", "type": "IntProperty"}))
+
 
 @unittest.skipUnless(splus_installed(), "S+ не установлен")
 class SPlusAuditRegression(unittest.TestCase):
@@ -68,6 +74,14 @@ class SPlusAuditRegression(unittest.TestCase):
 
     def test_trust_boundary_targetingteam_flagged_d6(self):
         self.assertTrue(any(f["symbol"] == "TargetingTeam" for f in self.by.get("D6", [])))
+
+    def test_hitching_post_interproc_flagged_d5(self):
+        # источник в обработчике RPC, сток (StaticAddBuff) в вызванной ToggleHitchDino
+        self.assertTrue(self._has("D5", "BP_HitchingPost", "BPServerHandleNetExecCommand"))
+
+    def test_omnitool_interproc_flagged_d5(self):
+        # FiredEvent — серверный RPC с Object-параметром Target, выдача предмета в вызванной функции
+        self.assertTrue(self._has("D5", "BP_OmniTool", "FiredEvent"))
 
     def test_findings_ranked_server_reachable_and_severity(self):
         ranks = [(not f.get("server_reachable", False), audit.SEV_RANK[f["severity"]])
