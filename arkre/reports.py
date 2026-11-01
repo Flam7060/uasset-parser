@@ -227,22 +227,31 @@ def load(path: str) -> Report:
 
 
 def list_reports(reports_dir: Optional[str] = None) -> list[Report]:
+    """Отчёты из `reports_dir`, включая подкаталоги (например `structures_plus_family/`)."""
     d = reports_dir or config.reports_dir()
     if not os.path.isdir(d):
         return []
     out = []
-    for name in sorted(os.listdir(d)):
-        if name.endswith(".md") and name != "README.md":
-            out.append(load(os.path.join(d, name)))
+    for root, _dirs, files in os.walk(d):
+        for name in sorted(files):
+            if name.endswith(".md") and name != "README.md":
+                out.append(load(os.path.join(root, name)))
+    out.sort(key=lambda r: r.path)
     return out
 
 
 def find_report(ref: str) -> Report:
-    """Отчёт по имени файла (с `.md` или без) либо по пути."""
+    """Отчёт по имени файла (с `.md` или без), по относительному пути (в т.ч. в подкаталоге) либо по абсолютному пути."""
     cand = ref if os.path.isabs(ref) else os.path.join(config.reports_dir(), ref)
     for p in (cand, cand + ".md"):
         if os.path.isfile(p):
             return load(p)
+    if not os.path.isabs(ref):
+        # ref может быть просто именем файла, лежащим в подкаталоге reports_dir
+        wanted = {os.path.basename(ref), os.path.basename(ref) + ".md"}
+        for r in list_reports():
+            if os.path.basename(r.path) in wanted:
+                return r
     raise FileNotFoundError(f"Нет отчёта {ref} в {config.reports_dir()}")
 
 
