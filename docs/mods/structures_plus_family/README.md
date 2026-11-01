@@ -18,9 +18,10 @@ created: 2026-10-30
 
 | Workshop ID | Имя | Статус отчёта |
 | --- | --- | --- |
-| 731604991  | Structures Plus (classic) | TODO |
+| 731604991  | Structures Plus (classic) | [Propagator + OmniTool](./Structures_Plus_S_731604991.md) |
 | 1999447172 | Super Structures | TODO (без своего propagator — наследует classic) |
-| 3461528683 | Structures Kav | [частично — OmniTool](../StructuresPlusMod_3461528683.md), propagator TODO |
+| 3469918803 | C+ Structures | [карточка-дифф от classic](./C_Structures_3469918803.md) |
+| 3461528683 | Structures Kav | [частично — OmniTool](./StructuresPlusMod_3461528683.md), propagator TODO |
 | 3757858218 | Friendly Fibercraft \| Utility | [CryoBreeder](./FriendlyFibercraft_Utility_3757858218.md) |
 | 3803950735 | CPlusMain | TODO (BP_CryoBreeder_CP) |
 
@@ -37,3 +38,11 @@ Cheater()/SessionID если есть. Поля чтения дают готов
 первой зафиксирована в classic-отчёте — ставим в его таблице статус
 «присутствует в <форке>» без копирования описания. Таблица в Kav-отчёте
 («Статус в Kav») — пример такой разметки.
+
+**Известный разрыв конвенции:** находка #7 Kav-отчёта (OmniTool Basic Transfer
+— `SanityCheckBasicTransfer` не проверяет источник) была зафиксирована первой
+в форке, хотя баг — байт-в-байт из classic. В classic-отчёт задним числом
+добавлен второй, независимый путь к тому же гейту (`SetSessionVars` вместо
+`FiredEvent`/`Target`); сам факт отсутствия проверки источника остаётся
+описан только в Kav-отчёте (там же фикс). Не переносить описание — читать по
+кросс-ссылке.
