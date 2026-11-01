@@ -15,6 +15,9 @@
     D3 ui-only-limit    — лимит/настройка читается, но не на серверном пути (только UI);
     D4 unclamped-rpc    — число от клиента (Int/FloatParam*) втекает в количество/смещение
                           без Clamp/Min/Max;
+    D5 untrusted-interproc — недоверенный объект (ExecParams.ObjParam* или Object-параметр
+                          серверного RPC) по цепочке вызовов мода достигает мутирующего
+                          стока в ДРУГОЙ функции без проверки доступа (межпроцедурный D1);
     D6 trust-boundary   — проверка построена на поле идентичности, которое атакующий
                           двигает ванильной механикой (ноглин, смена трайба, криопод…).
 
@@ -52,6 +55,10 @@ GUARD_CALLS = {
     "GetDistanceTo", "GetDistanceToActor", "IsAlliedTo", "IsAllied", "IsInRange",
     "SP_GetAccessLevel", "HasOwner", "IsOwner", "GetTribeID", "CanAccess",
     "IsAllowedToBuild", "BPAllowCrafting", "HasEngram", "IsValidToClone",
+    # нативные/мод-проверки доступа ARK, которые реально гейтят действие — чтобы
+    # безопасные пути (bulk-transfer, RTS-команды) не флагались D1/D5 вхолостую
+    "AllowStructureAccess", "BPOverrideAllowStructureAccess", "AllowTribeGroupPermission",
+    "IsDinoValidToPossess", "IsPlayerControllerInPinCodeValidationList", "IsAllowedToPlaceBeacon",
 }
 CLAMP_CALLS = {"Clamp", "FClamp", "ClampInt", "ClampFloat", "Min", "FMin", "Max", "FMax"}
 
@@ -84,9 +91,10 @@ ACCESS_FN = re.compile(r"(Allow|Access|CanDo|CanUse|IsAllowed|Permission|Gate)",
 # (а не размеры инвентаря/кулдауны — те применяются на самой структуре).
 LIMIT_KEY = re.compile(r"(Max|Limit|Disable|Prevent|Restrict|Respect|Obey)", re.I)
 
-SEVERITY = {"D1": "высокая", "D2": "высокая", "D3": "средняя", "D4": "низкая", "D6": "средняя"}
+SEVERITY = {"D1": "высокая", "D2": "высокая", "D3": "средняя", "D4": "низкая",
+            "D5": "высокая", "D6": "средняя"}
 SEV_RANK = {"высокая": 0, "средняя": 1, "низкая": 2}
-DETECTORS = ("D1", "D2", "D3", "D4", "D6")
+DETECTORS = ("D1", "D2", "D3", "D4", "D5", "D6")
 
 
 # --- вспомогательное -------------------------------------------------------
@@ -108,22 +116,54 @@ def _branch_tokens(lines: list[str]) -> str:
     return " ".join(m.group(1) for ln in lines for m in IF_NOT.finditer(ln))
 
 
+def _is_untrusted_param(p: dict) -> bool:
+    """Object/Class-параметр серверного RPC — кандидат на недоверенный объект.
+    Контроллер вызывающего (PC/ForPC) исключаем: это личность отправителя, не объект-жертва."""
+    t = p.get("type", "")
+    if not (t.startswith("ObjectProperty") or t.startswith("ClassProperty")):
+        return False
+    if "Controller" in t:
+        return False
+    return not re.search(r"(?:^|_)(?:PC|ForPC|FromPC|Controller)$", p.get("name", ""))
+
+
+def _untrusted_object_src(fn: dict, lines: list[str]) -> Optional[str]:
+    """Откуда в функцию приходит недоверенный объект (или None)."""
+    if any(RPC_OBJ.search(ln) for ln in lines):
+        return "ExecParams.ObjParam*"
+    net = fn.get("net")
+    if net and net.get("direction") == "server":
+        params = [p["name"] for p in fn.get("params", []) if _is_untrusted_param(p)]
+        if params:
+            return f"Object-параметр NetServer: {', '.join(params)}"
+    return None
+
+
+def _fn_guarded(fn: dict, lines: list[str]) -> bool:
+    """Есть ли в функции проверка доступа/команды/дистанции (гасит D1/D5)."""
+    if _call_members(fn) & GUARD_CALLS:
+        return True
+    return any("TargetingTeam" in ln or "GetDistanceTo" in ln or "AllowStructureAccess" in ln
+               for ln in lines)
+
+
 # --- детекторы -------------------------------------------------------------
 
 def d1_untrusted_object(ma, fn, rel, fname) -> Optional[dict]:
-    """Мутация объекта из ExecParams.ObjParam* без проверки владельца/команды/дистанции."""
+    """Мутация недоверенного объекта (ExecParams.ObjParam* или Object-параметр серверного
+    RPC) в той же функции без проверки владельца/команды/дистанции."""
     lines = _fn_lines(fn)
-    if not any(RPC_OBJ.search(ln) for ln in lines):
+    src = _untrusted_object_src(fn, lines)
+    if not src:
         return None
     members = _call_members(fn)
     sinks = sorted(members & MUTATING_SINKS)
     if not sinks:
         return None
-    # защита: явный вызов-гард или сравнение команды/дистанции в тексте
-    if members & GUARD_CALLS or any("TargetingTeam" in ln or "GetDistanceTo" in ln for ln in lines):
+    if _fn_guarded(fn, lines):
         return None
     sink_line = next((ma.line(rel, fname, x["mem"]) for x in _calls(fn) if x["member"] in sinks), "")
-    return {"detail": f"объект из ExecParams.ObjParam* уходит в {', '.join(sinks)} без проверки "
+    return {"detail": f"объект ({src}) уходит в {', '.join(sinks)} без проверки "
                       f"владельца/команды/дистанции", "line": sink_line}
 
 
@@ -209,6 +249,76 @@ def d6_trust_boundary(ma, fn, rel, fname) -> list[dict]:
     return out
 
 
+# межпроцедурный: недоверенный объект достигает стока через вызовы мода
+D5_MAX_DEPTH = 5
+
+
+def _reach_depth(graph, start, max_depth: int) -> dict:
+    """Узлы, достижимые из start по рёбрам мода, с минимальной глубиной (виджеты пропускаем)."""
+    seen = {start: 0}
+    todo = [start]
+    while todo:
+        cur = todo.pop()
+        d = seen[cur]
+        if d >= max_depth:
+            continue
+        for nxt in graph.edges.get(cur, ()):
+            if graph.ma.items[nxt[0]]["widget"]:
+                continue
+            if nxt not in seen or seen[nxt] > d + 1:
+                seen[nxt] = d + 1
+                todo.append(nxt)
+    return seen
+
+
+def d5_untrusted_interproc(ma, graph, server: set) -> list[dict]:
+    """Недоверенный объект входит в серверный RPC и по цепочке вызовов мода достигает
+    мутирующего стока в ДРУГОЙ функции, где нет проверки доступа (межпроцедурный D1).
+
+    Ловит разнесённые случаи, которые пофункциональный D1 пропускает: источник в
+    диспетчере/событии, сток — в вызванной функции (HitchingPost: обработчик → ToggleHitchDino;
+    OmniTool Basic Transfer: FiredEvent_Kav → HandleBasicTransfer). Эвристика: гард
+    проверяется в функции-входе и в функции-стоке; промежуточные гарды не трассируются,
+    поэтому это список кандидатов, не доказательство. Один флаг на вход — ближайший сток.
+    """
+    out = []
+    for rel, it in ma.items.items():
+        if it["widget"]:
+            continue
+        for efname, fn in it["view"]["functions"].items():
+            if (rel, efname) not in server:
+                continue
+            lines = _fn_lines(fn)
+            src = _untrusted_object_src(fn, lines)
+            if not src or _fn_guarded(fn, lines):
+                continue
+            reach = sorted(_reach_depth(graph, (rel, efname), D5_MAX_DEPTH).items(),
+                           key=lambda kv: kv[1])
+            for (srel, sfname), depth in reach:
+                if (srel, sfname) == (rel, efname):
+                    continue                       # в той же функции — это D1
+                sfn = ma.items[srel]["view"]["functions"].get(sfname)
+                if not sfn:
+                    continue
+                sinks = sorted(_call_members(sfn) & MUTATING_SINKS)
+                if not sinks:
+                    continue
+                slines = _fn_lines(sfn)
+                if _fn_guarded(sfn, slines):
+                    continue
+                sink_line = next((ma.line(srel, sfname, x["mem"]) for x in _calls(sfn)
+                                  if x["member"] in sinks), "")
+                out.append({"detector": "D5", "severity": SEVERITY["D5"],
+                            "asset": ma.label(rel), "function": efname, "server_reachable": True,
+                            "symbol": sinks[0],
+                            "detail": f"недоверенный объект ({src}) по вызовам достигает "
+                                      f"{', '.join(sinks)} в {ma.label(srel)}:{sfname} "
+                                      f"(глубина {depth}) без проверки доступа на пути",
+                            "line": sink_line})
+                break                              # ближайший сток — один флаг на вход
+    return out
+
+
 # --- оркестратор -----------------------------------------------------------
 
 def _server_funcs(ma, graph) -> set:
@@ -239,6 +349,8 @@ def audit(workshop_id: str, detectors: Optional[list] = None, limit: int = 200) 
 
     if "D3" in want:
         findings += d3_ui_only_limits(ma)
+    if "D5" in want:
+        findings += d5_untrusted_interproc(ma, graph, server)
 
     for rel, it in ma.items.items():
         if it["widget"]:                     # клиентский UI — пропускаем шумные детекторы
