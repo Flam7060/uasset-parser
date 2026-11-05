@@ -1,7 +1,7 @@
 #!/usr/bin/env -S uv run --script
 # /// script
 # requires-python = ">=3.11"
-# dependencies = ["mcp>=1.2,<2"]
+# dependencies = ["mcp>=1.2,<2", "iced-x86"]
 # ///
 """
 ark-re: MCP-сервер разбора модов ARK (stdio).
@@ -21,7 +21,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from mcp.server.fastmcp import FastMCP  # noqa: E402
 
-from arkre import asset_tools, assets, audit, config, mods, pdb, respond, security, xref  # noqa: E402
+from arkre import asset_tools, assets, audit, config, disasm, mods, pdb, respond, security, xref  # noqa: E402
 
 mcp = FastMCP("ark-re")
 
@@ -175,6 +175,20 @@ def pdb_symbols(query: str, kind: str = "function", pdb_name: str = "server",
     (оценка по соседнему символу). `kind`: function | data | any. Чтобы найти нативную
     реализацию вызова из BP, смотри calls[].native в asset_function."""
     return respond.fit(pdb.pdb_symbols(query, kind, pdb_name, limit))
+
+
+@tool
+def native_calls(symbol: str, pdb_name: str = "server") -> str:
+    """Граф вызовов нативной функции по машкоду ShooterGameServer.exe (глубина 1, статически
+    с диска): calls[] — прямые (direct), хвостовые (tail), импорты по IAT (import) и
+    виртуальные (virtual); reads[]/writes[] — глобалы из PDB; indirect[] — непрямые вызовы
+    (vtable со слотом / reg); unresolved[] — цели вне известных символов. `symbol` — точное
+    имя или glob вида `*AShooterCharacter::Tick(float)`; при неоднозначности вернёт
+    кандидатов. Ограничения: виртуальный вызов назван только если в функции регистр
+    загружен из известной vftable (`lea reg,[vftable]`), остальные — `indirect{vtable, slot}`;
+    размер символа — оценка по соседу, линейный проход может зацепить хвост. Сырой листинг
+    сюда не выдаётся (CLI: python -m arkre.disasm --listing файл)."""
+    return respond.fit(disasm.native_calls(symbol, pdb_name))
 
 
 # --- фаза 2: живое чтение памяти (только при ARK_LIVE=1) ------------------------

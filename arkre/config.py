@@ -32,6 +32,14 @@ def pdb_client() -> str:
                 os.path.join(game_dir(), "ShooterGame", "Binaries", "Win64", "ShooterGame.pdb"))
 
 
+def server_exe() -> str:
+    return _env("ARK_SERVER_EXE", os.path.join(os.path.dirname(pdb_server()), "ShooterGameServer.exe"))
+
+
+def client_exe() -> str:
+    return _env("ARK_CLIENT_EXE", os.path.join(os.path.dirname(pdb_client()), "ShooterGame.exe"))
+
+
 def pdbutil() -> str:
     return _env("ARK_PDBUTIL", "llvm-pdbutil")
 
