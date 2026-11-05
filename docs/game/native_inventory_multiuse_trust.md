@@ -7,6 +7,7 @@ status: draft
 reviewed: 2026-11-01
 confidence: кандидаты (структурно обоснованы, не подтверждены построчно)
 verified_without_asm: 2026-11-01 — найдены нативные гейты (range+clamp), N2/N3 понижены; см. раздел «Проверка»
+verified_asm: 2026-11-01 — прочитан дизасм (offline, arkre.disasm) ServerMultiUse, ServerAddItemToSlot, CheckIsOnTransferAllCooldown, TransferAllItemsToInventory, ServerTransferAllToRemoteInventory; N1–N4 в нативе НЕ подтверждены, см. раздел «Итог по asm»
 ---
 
 # Разбор самой игры: инвентарь, MultiUse и доверие к клиенту
@@ -44,10 +45,10 @@ verified_without_asm: 2026-11-01 — найдены нативные гейты 
 
 | # | Что доверяется клиенту | Нативная зацепка | Серьёзность |
 | --- | --- | --- | --- |
-| N1 | индекс пункта MultiUse | `ServerMultiUse(obj,int)` + `FMultiUseEntry.UseIndex`/`bDisableUse`/`bClientSideOnly` | высокая |
+| N1 | индекс пункта MultiUse | `ServerMultiUse(obj,int)` + `FMultiUseEntry.UseIndex`/`bDisableUse`/`bClientSideOnly` | ~~высокая~~ → **опровергнуто в нативе** (asm: сервер пересобирает пункты, сверяет индекс/ForComponent/bDisableUse); остаток — `bClientSideOnly` и per-class обработчик |
 | N2 | указатель чужого инвентаря | 9× `Server*RemoteInventory(UPrimalInventoryComponent*,…)` | ~~высокая~~ → **средняя-низкая** (гейт `RemoteInventoryAllowViewing(PC,float)` существует) |
 | N3 | количество и номер слота | `ServerTransferFromRemoteInventory(inv,id,int,int,bool)`, `ServerAddItemToSlot(id,int)` | ~~средняя~~ → **низкая** (гейты `...AllowAdd/RemoveItems(...,int*,…)` клампят по указателю) |
-| N4 | тайминг TransferAll + атомарность при капе | `CheckIsOnTransferAllCooldown(inv)`, `TransferAllItemsToInventory` | средняя |
+| N4 | тайминг TransferAll + атомарность при капе | `CheckIsOnTransferAllCooldown(inv)`, `TransferAllItemsToInventory` | ~~средняя~~ → **опровергнуто в нативе** (кулдаун на PC, не на цель; RemoveItem до AddItem) |
 
 ### N1 — доверие к `UseIndex` (корень «сумка-трансмиттер»)
 `UseIndex` приходит обратно от клиента, а `bDisableUse`/`bClientSideOnly` — просто биты записи. Если
@@ -89,7 +90,25 @@ remote-RPC сам гонит единый `CanAccessInventory(PC, inv)`.
 
 **Вывод проверки:** игра **не наивна** — правильные гейты (радиус + кламп по указателю) существуют. Поэтому N2/N3 понижены: остаточный риск не «всё доверяется», а узкий — **зовёт ли конкретный RPC эти гейты и до мутации ли** (это тело функции, без asm/стенда не видно). N1 остаётся самым правдоподобным (есть живой чит). Что это **не** опровергает: гейт можно обойти, если путь его не вызывает, — но презумпция сместилась в сторону «скорее защищено».
 
+## Итог по asm (2026-11-01)
+
+Прочитан дизассемблер с диска (внешне, игра не трогалась). Все четыре кандидата **в нативном коде опровергнуты или сильно ослаблены**:
+
+- **N1 — `ServerMultiUse_Implementation` (`0xdccf50`) НЕ доверяет `UseIndex`.** Порядок: `IsInputAllowed` → кулдаун `TimeSince` → цель приводится к актору (компонент → `GetOwner`) → проверка дистанции (`sqrtf` от `BPOverrideUILocation`, при превышении — только если `AllowManualMultiUseActivation` вернул true) → **сервер заново зовёт виртуальную `GetMultiUseEntries(PC, &entries)`** (vtable+0x2F8; для дино ещё `GetRidingMultiUseEntries`) → перебирает записи и берёт ту, у которой `entry.UseIndex == присланный` **и** (`ForComponent == null && target == актор` либо `ForComponent == target`) **и** `bDisableUse == 0`; не нашлась → тихий `return`. Только после этого вызывается обработчик (vtable+0x840) и `ClientDoMultiUse`. Подделать индекс «серого/чужого» пункта нельзя.
+  - Остаточное: `bClientSideOnly` (бит 11) на сервере **не проверяется** (запись с ним проходит); что делает обработчик vtable+0x840 с индексом — per-class (BP/нативный оверрайд), его тело не разбиралось. «Сумка-трансмиттер» поэтому — почти наверняка **BP/мод-уровень** (его `GetMultiUseEntries`/обработчик у конкретного класса), а не дыра базового `ServerMultiUse`.
+- **N2 — гейты есть и зовутся.** `RemoteInventoryAllowRemoveItems` и `AllowAddItems` оба напрямую зовут `RemoteInventoryAllowViewing`; она проверяет `BuffsPreventInventoryAccess`, `AllowTribeGroupPermission`, трайб/войну (`IsTribeWarActive`), дистанцию (`sqrtf`), `IsInvincible`, плюс BP-хук `BPRemoteInventoryAllowViewing`. `ServerTransferFromRemoteInventory` зовёт `AllowRemoveItems` (2 места), `ServerTransferToRemoteInventory` — `AllowAddItems`+`AllowRemoveItems`, `TransferAll` — `AllowAddItems` (на контейнер и на каждый предмет). Указатель от клиента перепроверяется независимо.
+- **N3 — слот валидируется.** `ServerAddItemToSlot_Implementation` (`0x754230`): `0 <= slot < NumSlots` (поле `UPrimalInventoryComponent+0x1C4 = NumSlots`), затем `FindItem` **в этом же компоненте** (чужие предметы не найти) и виртуальная установка слота. Это RPC на компоненте, который клиент может звать только на принадлежащем ему инвентаре. Количество клампится через `int*` в `AllowAdd/RemoveItems`. «Дюп чертежей через быстрые слоты» нативом не объясняется.
+- **N4 — кулдаун не per-target, порядок «удалить → добавить».**
+  - `CheckIsOnTransferAllCooldown` (`0xdc24e0`): метка времени пишется в **одно поле контроллера** (`PC+0xA00`), а не в контейнер → чередование двух ящиков кулдаун не обходит.
+  - `TransferAllItemsToInventory` (`0x776400`): `AllowAddInventoryItem(item,&qty)` → `RemoveItem` (если не удалось — пропуск) → `GetItemNetInfo` → `AddItem`. `ServerTransferAllToRemoteInventory`: то же самое — гейт `AllowAddItems` с `int*`, затем `RemoveItem` **до** `AddItem`, частичный перенос — через `ServerTransferToRemoteInventory` (свой гейт). При отказе приёмника по капу (`GetMaxInventoryItems` внутри `AllowAddItems`) предмет остаётся на источнике, а не дублируется; наихудший нативный исход гонки — потеря, не дюп.
+
+**Вывод:** три «известных на сервере бага» (сумка-трансмиттер, дюп чертежей через быстрые слоты, дюп на станции брони при овер-капе) **не следуют из базовых нативных путей**. Искать надо в BP-швах и модах: оверрайды `GetMultiUseEntries`/обработчика multiuse у класса «сумки», `BPCustomRemoteInventoryAllowAdd/RemoveItems`, `BPAllowAddInventoryItem`, `BPForceAllowRemoteAddToInventory`, `BPCanAddToInventory`, серверные плагины капа (см. [[project_baby_dupe_cap130]] для похожего класса). Инструмент: `mod_audit` (D2/D4/D5) и `mod_search` по этим символам на модах стенда.
+
+Не проверено (честно): тела обработчика multiuse (vtable+0x840), `AddItem`/`RemoveItem` на предмет скрытых обходов (`bIgnoreMaxInventoryItems`), `ServerEquipToRemoteInventory`/дроп/гриндер; ванильные BP-швы.
+
 ## Чем это чревато (простыми словами)
+
+> ⚠ Раздел ниже написан **до** проверки по asm и описывает последствия, **если** бы кандидаты подтвердились. По итогам asm (выше) в нативе они не подтверждены; читать как сценарии для BP/мод-уровня.
 
 Почему это не «мелкие баги интерфейса», а то, что ломает экономику и PvP сервера:
 

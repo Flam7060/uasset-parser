@@ -65,6 +65,7 @@ Baseline разбора лежит во frontmatter отчёта (`workshop_ids`
 | Тема | Отчёт | Дата | Кратко |
 | --- | --- | --- | --- |
 | Инвентарь, MultiUse, доверие к клиенту | [game/native_inventory_multiuse_trust.md](game/native_inventory_multiuse_trust.md) | 2026-11-01 | Кандидаты по серверным RPC, которым клиент диктует индекс действия (`ServerMultiUse`→ сумка-трансмиттер), указатель чужого инвентаря (9× `Server*RemoteInventory`), количество/слот (дюп чертежей) и тайминг/атомарность TransferAll (овер-кап дюп станции брони). Тела (asm) не читались — кандидаты на стендовую проверку. |
+| Движение, выстрелы, дюп | [game/native_movement_shots_dupe.md](game/native_movement_shots_dupe.md) | 2026-11-01 | Граф вызовов из машкода: движение валидирует метку времени (`VerifyClientTimeStamp`) и санирует векторы; хитскан сервер перетрассирует сам, снаряды клампит (`ClampLocation`/`ClampRotAxis`)+`ValidateFire`. Дюп: `ServerSplitItemStack` и кластер-выгрузка `ServerAddItemToArkInventory` структурно корректны — остаток в клампе `IncrementItemQuantity` и атомарности выгрузки (кандидаты на стенд). |
 
 ## Очередь (шаблоны, не разобрано)
 
